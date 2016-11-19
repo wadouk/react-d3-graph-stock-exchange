@@ -1,0 +1,43 @@
+{
+  "name": "react-d3-graph-stock-exchange",
+  "version": "1.0.0",
+  "main": "index.js",
+  "license": "MIT",
+  "repository": "git@github.com:wadouk/react-d3-graph-stock-exchange.git",
+  "dependencies": {
+    "axios": "^0.15.2",
+    "babel-core": "^6.18.2",
+    "babel-loader": "^6.2.8",
+    "babel-plugin-syntax-class-properties": "^6.13.0",
+    "babel-plugin-transform-class-properties": "^6.19.0",
+    "babel-preset-es2015": "^6.18.0",
+    "babel-preset-react": "^6.16.0",
+    "cross-env": "^3.1.3",
+    "glob": "^7.1.1",
+    "karma": "^1.3.0",
+    "npm-run-all": "^3.1.1",
+    "phantomjs-prebuilt": "^2.1.13",
+    "react": "^15.4.0",
+    "react-d3": "^0.4.0",
+    "react-dom": "^15.4.0",
+    "setimmediate": "^1.0.5",
+    "tutorial-node-stock-server": "https://github.com/o2t/tutorial-node-stock-server",
+    "webpack": "^1.13.3",
+    "webpack-dev-server": "^1.16.2",
+    "webpack-merge": "^0.17.0",
+    "webpack-validator": "^2.2.9"
+  },
+  "scripts": {
+    "test": "cross-env NODE_ENV=test npm-run-all test-one",
+    "test-watch": "cross-env npm_lifecycle_event=test karma start --singleRun false --autoWatch true",
+    "test-one": "cross-env npm_lifecycle_event=test karma start --singleRun true --autoWatch false",
+    "dev": "npm-run-all --parallel webpack-dev-server mock-server",
+    "webpack-dev-server": "cross-env npm_lifecycle_event=dev webpack-dev-server",
+    "build": "webpack",
+    "mock-server": "cd node_modules/tutorial-node-stock-server && npm start"
+  },
+  "devDependencies": {
+    "karma-mocha": "^1.3.0",
+    "karma-phantomjs-launcher": "^1.0.2"
+  }
+}
