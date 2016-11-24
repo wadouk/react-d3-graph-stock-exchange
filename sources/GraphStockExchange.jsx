@@ -6,20 +6,6 @@ import {
 import xhr from 'axios';
 import {LineChart} from 'react-d3-basic'
 
-function summarizeNumber(t, precision = 1) {
-  // TODO doesn't handle all numbers
-  return t.toString().replace(/(\d)\.(\d+)(e-(\d+))?/g, (match, p1, p2, p3, p4) => {
-    function computePrecision(p2_) {
-      if (p1 == "0") {
-        return p2_.replace(/(0+)/g, "$1").length + precision + 1
-      }
-      return p2_.length - precision;
-    }
-    const t2 = Math.round(parseInt(p2, 10) / Math.pow(10, computePrecision(p2)));
-    return parseFloat("" + p1 + "." + t2 + "e-" + p4);
-  });
-}
-
 export default class GraphStockExchange extends Component {
   static defaultProps = {
     chartSeries: [{
@@ -38,7 +24,8 @@ export default class GraphStockExchange extends Component {
   constructor(props) {
     super(props);
     this.state = {
-      data: []
+      data: [],
+      override: [],
     }
   }
 
@@ -48,8 +35,8 @@ export default class GraphStockExchange extends Component {
         this.setState({
           data: response.data.slice(-20).map(d => {
             return {
-              CAC40: summarizeNumber(d.stocks.CAC40),
-              NASDAQ: summarizeNumber(d.stocks.NASDAQ),
+              CAC40: (d.stocks.CAC40),
+              NASDAQ: (d.stocks.NASDAQ),
               index: d.index
             }
           })
@@ -69,16 +56,57 @@ export default class GraphStockExchange extends Component {
     clearInterval(this.interval)
   }
 
+  onChange(currency, value) {
+    return (event) => {
+      const override = this.state.override;
+      override[value.index] = (override[value.index] || {});
+      override[value.index][currency] = event.target.value;
+      this.setState({
+        override: override,
+      });
+    }
+  }
+
+
+  getData() {
+    const getValue = ((currency, value) => {
+      return (this.state.override[value.index] || {})[currency] || value[currency];
+    }).bind(this);
+
+    return this.state.data.map((d) => {
+      return this.props.chartSeries.map(tuple => {
+        return {[`${tuple.field}`]: getValue(tuple.field, d)};
+      }).reduce((reduced, value) => {
+        return Object.assign({index: d.index}, reduced, value)
+      }, {});
+    })
+  }
+
   renderTable() {
+    var datas = this.getData();
+
     return (
       <table onMouseEnter={this.stopInterval.bind(this)} onMouseLeave={this.startInterval.bind(this)}>
+        <thead>
+        <tr>
+          <th>Currencies</th>
+          {datas.map(d => {
+            return (<th key={d.index}>{d.index}</th>)
+          })}
+        </tr>
+        </thead>
         <tbody>
-        {this.props.chartSeries.map(serie => {
+        {this.props.chartSeries.map(tuple => {
           return (
-            <tr key={serie.field}>
-              <td style={{color: serie.color}}>{serie.name}</td>
-              {this.state.data.map(value => {
-                return (<td key={value.index}>{value[serie.field]}</td>)
+            <tr key={tuple.field}>
+              <td style={{color: tuple.color}}>{tuple.name}</td>
+              {datas.map(value => {
+                return (<td key={value.index}>
+                  <input
+                    onChange={this.onChange(tuple.field, value)}
+                    value={value[tuple.field]}
+                    style={{width: "40px"}}/>
+                </td>)
               })}
             </tr>
           )
@@ -90,9 +118,11 @@ export default class GraphStockExchange extends Component {
 
   render() {
     return (<div>
-      <LineChart margins={{left: 100, right: 100, top: 50, bottom: 50}} width={1000} height={500}
+      <LineChart margins={{left: 100, right: 100, top: 50, bottom: 50}}
+                 width={1000}
+                 height={500}
                  chartSeries={this.props.chartSeries}
-                 data={this.state.data} x={(d) => d.index}/>
+                 data={this.getData()} x={(d) => d.index}/>
       {this.renderTable()}
     </div>)
   }
