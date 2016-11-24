@@ -2,6 +2,10 @@
   "name": "react-d3-graph-stock-exchange",
   "version": "1.0.0",
   "main": "index.js",
+  "engines": {
+    "node" : ">4.5",
+    "npm" : ">2.15"
+  },
   "license": "MIT",
   "repository": "git@github.com:wadouk/react-d3-graph-stock-exchange.git",
   "dependencies": {
